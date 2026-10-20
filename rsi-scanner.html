@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1419">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="اسکنر RSI">
+<title>اسکنر RSI کریپتو</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e1419'/%3E%3Cpath d='M8 20h48M8 44h48' stroke='%23364250' stroke-width='2' stroke-dasharray='4 4'/%3E%3Cpath d='M8 26l10 4 8-6 10 14 8-4 12 12' fill='none' stroke='%2345d0b5' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap">
+<style>
+/* Layout: a single narrow column for phones; controls on top, signal list below, notes last.
+   Palette: cool ink-blue neutrals, one teal accent for the UI, one coral reserved for the oversold signal. */
+:root {
+  --bg: #f2f5f8;
+  --surface: #ffffff;
+  --fg: #12202b;
+  --muted: #5d6e7c;
+  --line: #dbe3ea;
+  --accent: #0b8f7a;
+  --accent-ink: #ffffff;
+  --signal: #d4452a;
+  --signal-bg: #fbe5df;
+  --over: #2f7be0;
+  --track: #e6ecf1;
+  --up: #0b8f7a;
+  --down: #d4452a;
+  --font: "Vazirmatn", "Segoe UI", Tahoma, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1419;
+    --surface: #161e26;
+    --fg: #e6edf3;
+    --muted: #8a9aa8;
+    --line: #26323d;
+    --accent: #45d0b5;
+    --accent-ink: #06231d;
+    --signal: #ff7d5e;
+    --signal-bg: #3a211b;
+    --over: #6aa5ff;
+    --track: #232e38;
+    --up: #45d0b5;
+    --down: #ff7d5e;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.7;
+  padding-block: max(16px, env(safe-area-inset-top, 0px)) max(32px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+h1 { margin: 0; font-size: 1.45rem; line-height: 1.3; text-wrap: balance; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: .88rem; }
+.num { direction: ltr; unicode-bidi: isolate; display: inline-block; font-variant-numeric: tabular-nums; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > label, .field > .lab { font-size: .85rem; color: var(--muted); display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.field > label b { color: var(--fg); font-size: 1rem; }
+input[type=range] { width: 100%; accent-color: var(--accent); margin: 4px 0; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.seg button { font: inherit; font-size: .88rem; padding: 8px 6px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.seg button + button { border-right: 1px solid var(--line); }
+.seg button[aria-pressed=true] { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.go { font: inherit; font-weight: 700; padding: 11px 14px; border-radius: 10px; border: 0; background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+.go:disabled { opacity: .55; cursor: progress; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.status { font-size: .86rem; color: var(--muted); min-height: 1.5em; }
+.status.err { color: var(--signal); }
+.bar { height: 4px; background: var(--track); border-radius: 2px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+
+.tools { display: flex; flex-direction: column; gap: 10px; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.tabs button { font: inherit; font-size: .88rem; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.tabs button[aria-pressed=true] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.search { font: inherit; width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+
+.list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.row { display: grid; grid-template-columns: 1.7rem 2rem minmax(0, 1fr) auto; grid-template-areas: "rk ic nm rs" "rk ic mt rs"; column-gap: 10px; row-gap: 0; align-items: center; padding: 10px 12px; }
+.row + .row { border-top: 1px solid var(--line); }
+.rk { grid-area: rk; color: var(--muted); font-size: .78rem; text-align: center; }
+.ic { grid-area: ic; width: 2rem; height: 2rem; border-radius: 50%; background: var(--track); object-fit: cover; }
+.nm { grid-area: nm; min-width: 0; display: flex; gap: 6px; align-items: baseline; }
+.nm b { font-size: 1rem; letter-spacing: .02em; }
+.nm span { color: var(--muted); font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.mt { grid-area: mt; display: flex; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: .8rem; }
+.ch.up { color: var(--up); }
+.ch.dn { color: var(--down); }
+.rs { grid-area: rs; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.rv { font-weight: 700; font-size: 1.05rem; padding: 0 9px; border-radius: 7px; background: var(--track); line-height: 1.6; }
+.rv.low { background: var(--signal-bg); color: var(--signal); }
+.gg { position: relative; width: 78px; height: 6px; border-radius: 3px; direction: ltr; background: linear-gradient(to right, var(--signal-bg) 0 30%, var(--track) 30% 70%, color-mix(in srgb, var(--over) 28%, var(--track)) 70% 100%); }
+.gg i { position: absolute; top: -2px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--fg); border: 2px solid var(--surface); }
+.empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+
+.foot { color: var(--muted); font-size: .8rem; display: flex; flex-direction: column; gap: 8px; }
+.foot details { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+.foot summary { cursor: pointer; color: var(--fg); }
+.foot p { margin: 6px 0 0; }
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>اسکنر RSI کریپتو</h1>
+    <p class="sub">RSI روزانه (۱۴ دوره‌ای) · ۵۰۰ ارز برتر مارکت‌کپ · ارزهایی که وارد ناحیه اشباع فروش شده‌اند</p>
+  </header>
+
+  <section class="panel" aria-label="تنظیمات">
+    <div class="field">
+      <label for="thr"><span>آستانه اشباع فروش (RSI کمتر از)</span><b class="num" id="thrVal">30</b></label>
+      <input type="range" id="thr" min="15" max="40" step="1" value="30">
+    </div>
+    <div class="field">
+      <span class="lab">کندل مورد استفاده</span>
+      <div class="seg" role="group" aria-label="کندل مورد استفاده">
+        <button type="button" id="modeLive" aria-pressed="true">کندل امروز (زنده)</button>
+        <button type="button" id="modeClosed" aria-pressed="false">آخرین کندل بسته‌شده</button>
+      </div>
+    </div>
+    <button type="button" class="go" id="go">بروزرسانی داده‌ها</button>
+    <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="tools">
+    <div class="tabs" role="group" aria-label="نمایش">
+      <button type="button" id="tabLow" aria-pressed="true">زیر آستانه</button>
+      <button type="button" id="tabAll" aria-pressed="false">همه ارزها</button>
+    </div>
+    <input class="search" id="q" type="search" placeholder="جست‌وجوی نام یا نماد ارز" autocomplete="off">
+  </section>
+
+  <ul class="list" id="list"></ul>
+
+  <footer class="foot">
+    <details id="missBox" hidden>
+      <summary id="missSum"></summary>
+      <p id="missList"></p>
+    </details>
+    <p>فهرست ارزها از CoinGecko گرفته می‌شود و کندل‌های روزانه از صرافی‌های Binance، Bybit، OKX، KuCoin و Gate (به همین ترتیب). ارزی که در هیچ‌کدام جفت‌ارز USDT نداشته باشد بررسی نمی‌شود. استیبل‌کوین‌ها و توکن‌های بسته‌بندی‌شده (مثل WBTC) کنار گذاشته شده‌اند.</p>
+    <p>RSI به روش Wilder حساب می‌شود. کندل روزانه از ساعت ۰۰:۰۰ UTC شروع می‌شود (۰۳:۳۰ بامداد به وقت تهران). این ابزار توصیه‌ی خرید یا فروش نیست.</p>
+  </footer>
+</div>
+
+<script>
+"use strict";
+/* ---------- RSI (Wilder) ---------- */
+function rsi(closes, period) {
+  period = period || 14;
+  if (!closes || closes.length < period + 1) return null;
+  var gain = 0, loss = 0, i, d;
+  for (i = 1; i <= period; i++) {
+    d = closes[i] - closes[i - 1];
+    if (d >= 0) gain += d; else loss -= d;
+  }
+  var ag = gain / period, al = loss / period;
+  for (i = period + 1; i < closes.length; i++) {
+    d = closes[i] - closes[i - 1];
+    ag = (ag * (period - 1) + (d > 0 ? d : 0)) / period;
+    al = (al * (period - 1) + (d < 0 ? -d : 0)) / period;
+  }
+  if (al === 0) return ag === 0 ? 50 : 100;
+  return 100 - 100 / (1 + ag / al);
+}
+window.__rsi = rsi;
+
+/* ---------- constants ---------- */
+var MIN_CLOSES = 40;          // fewer candles than this = too new to trust Wilder smoothing
+var DAY = 86400000;
+var CACHE_KEY = "rsi-scanner-v1";
+var PREF_KEY = "rsi-scanner-prefs-v1";
+var STABLE = new Set(("usdt usdc dai fdusd tusd usde usds usdd pyusd busd usdp gusd frax lusd susd eurc eurt usdy usdtb usd0 usdx rlusd bfusd usdf usdg usdt0 xaut paxg wbtc weth steth wsteth weeth cbbtc cbeth reth wbeth wbnb meth ezeth rseth lbtc solvbtc tbtc usdc.e usyc buidl bsc-usd susde sdai syrupusdc").split(" "));
+
+function $(s) { return document.querySelector(s); }
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+function getJSON(url, ms) {
+  var ctl = new AbortController();
+  var t = setTimeout(function () { ctl.abort(); }, ms || 12000);
+  return fetch(url, { signal: ctl.signal }).then(function (r) {
+    if (!r.ok) { var e = new Error("HTTP " + r.status); e.status = r.status; throw e; }
+    return r.json();
+  }).finally(function () { clearTimeout(t); });
+}
+
+/* ---------- exchanges ----------
+   tickers(): Map(BASE -> last price in USDT)
+   candles(base): [{t: ms, c: close}] oldest -> newest (last one is today's live candle) */
+var BIN_HOSTS = ["https://data-api.binance.vision", "https://api.binance.com"];
+function binGet(path) {
+  var i = 0;
+  function next() {
+    return getJSON(BIN_HOSTS[i] + path).catch(function (e) {
+      i++;
+      if (i < BIN_HOSTS.length) return next();
+      throw e;
+    });
+  }
+  return next();
+}
+var EXCHANGES = [
+  {
+    name: "Binance",
+    tickers: function () {
+      return binGet("/api/v3/ticker/price").then(function (a) {
+        var m = new Map();
+        a.forEach(function (x) { if (/USDT$/.test(x.symbol)) m.set(x.symbol.slice(0, -4), parseFloat(x.price)); });
+        return m;
+      });
+    },
+    candles: function (b) {
+      return binGet("/api/v3/klines?symbol=" + encodeURIComponent(b) + "USDT&interval=1d&limit=120").then(function (rows) {
+        return rows.map(function (r) { return { t: Number(r[0]), c: parseFloat(r[4]) }; });
+      });
+    }
+  },
+  {
+    name: "Bybit",
+    tickers: function () {
+      return getJSON("https://api.bybit.com/v5/market/tickers?category=spot").then(function (j) {
+        var m = new Map();
+        ((j.result && j.result.list) || []).forEach(function (x) { if (/USDT$/.test(x.symbol)) m.set(x.symbol.slice(0, -4), parseFloat(x.lastPrice)); });
+        return m;
+      });
+    },
+    candles: function (b) {
+      return getJSON("https://api.bybit.com/v5/market/kline?category=spot&symbol=" + encodeURIComponent(b) + "USDT&interval=D&limit=120").then(function (j) {
+        var rows = (j.result && j.result.list) || [];
+        return rows.map(function (r) { return { t: Number(r[0]), c: parseFloat(r[4]) }; }).reverse();
+      });
+    }
+  },
+  {
+    name: "OKX",
+    tickers: function () {
+      return getJSON("https://www.okx.com/api/v5/market/tickers?instType=SPOT").then(function (j) {
+        var m = new Map();
+        (j.data || []).forEach(function (x) { if (/-USDT$/.test(x.instId)) m.set(x.instId.slice(0, -5), parseFloat(x.last)); });
+        return m;
+      });
+    },
+    candles: function (b) {
+      return getJSON("https://www.okx.com/api/v5/market/candles?instId=" + encodeURIComponent(b) + "-USDT&bar=1Dutc&limit=120").then(function (j) {
+        return (j.data || []).map(function (r) { return { t: Number(r[0]), c: parseFloat(r[4]) }; }).reverse();
+      });
+    }
+  },
+  {
+    name: "KuCoin",
+    tickers: function () {
+      return getJSON("https://api.kucoin.com/api/v1/market/allTickers").then(function (j) {
+        var m = new Map();
+        ((j.data && j.data.ticker) || []).forEach(function (x) { if (/-USDT$/.test(x.symbol)) m.set(x.symbol.slice(0, -5), parseFloat(x.last)); });
+        return m;
+      });
+    },
+    candles: function (b) {
+      return getJSON("https://api.kucoin.com/api/v1/market/candles?type=1day&symbol=" + encodeURIComponent(b) + "-USDT").then(function (j) {
+        return ((j && j.data) || []).slice(0, 150).map(function (r) { return { t: Number(r[0]) * 1000, c: parseFloat(r[2]) }; }).reverse();
+      });
+    }
+  },
+  {
+    name: "Gate",
+    tickers: function () {
+      return getJSON("https://api.gateio.ws/api/v4/spot/tickers").then(function (a) {
+        var m = new Map();
+        a.forEach(function (x) { if (/_USDT$/.test(x.currency_pair)) m.set(x.currency_pair.slice(0, -5), parseFloat(x.last)); });
+        return m;
+      });
+    },
+    candles: function (b) {
+      return getJSON("https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=" + encodeURIComponent(b) + "_USDT&interval=1d&limit=120").then(function (rows) {
+        return rows.map(function (r) { return { t: Number(r[0]) * 1000, c: parseFloat(r[2]) }; });
+      });
+    }
+  }
+];
+
+/* ---------- state ---------- */
+var state = { coins: [], ts: 0, scanning: false, tab: "low", q: "", thr: 30, mode: "live", missing: [] };
+
+function loadPrefs() {
+  try {
+    var p = JSON.parse(localStorage.getItem(PREF_KEY) || "{}");
+    if (p.thr >= 15 && p.thr <= 40) state.thr = p.thr;
+    if (p.mode === "live" || p.mode === "closed") state.mode = p.mode;
+    if (p.tab === "low" || p.tab === "all") state.tab = p.tab;
+  } catch (e) {}
+}
+function savePrefs() {
+  try { localStorage.setItem(PREF_KEY, JSON.stringify({ thr: state.thr, mode: state.mode, tab: state.tab })); } catch (e) {}
+}
+function loadCache() {
+  try {
+    var c = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+    if (c && c.coins && c.coins.length) { state.coins = c.coins; state.ts = c.ts || 0; state.missing = c.missing || []; return true; }
+  } catch (e) {}
+  return false;
+}
+function saveCache() {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: state.ts, coins: state.coins, missing: state.missing })); } catch (e) {}
+}
+
+/* ---------- data fetch ---------- */
+function fetchTop() {
+  var out = [];
+  function page(n) {
+    var url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=" + n + "&sparkline=false";
+    var tries = 0;
+    function attempt() {
+      return getJSON(url, 20000).catch(function (e) {
+        if (e.status === 429 && tries < 2) {
+          tries++;
+          setStatus("CoinGecko موقتاً درخواست‌ها را محدود کرده؛ ۲۰ ثانیه صبر می‌کنم…");
+          return sleep(20000).then(attempt);
+        }
+        throw e;
+      });
+    }
+    return attempt();
+  }
+  return page(1).then(function (a) { out = out.concat(a); return sleep(1500); })
+    .then(function () { return page(2); })
+    .then(function (a) { return out.concat(a); });
+}
+
+function isExcluded(c) {
+  var s = String(c.symbol || "").toLowerCase();
+  if (STABLE.has(s)) return true;
+  var p = c.current_price;
+  if (p && Math.abs(p - 1) < 0.03 && /usd|dollar|tether|stable/i.test(c.name + " " + s)) return true;
+  return false;
+}
+
+function pool(items, limit, worker) {
+  var i = 0;
+  function run() {
+    if (i >= items.length) return Promise.resolve();
+    var item = items[i++];
+    return worker(item).then(run);
+  }
+  var runners = [];
+  for (var k = 0; k < Math.min(limit, items.length); k++) runners.push(run());
+  return Promise.all(runners);
+}
+
+function todayStartUTC() {
+  var d = new Date();
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+function fetchCandles(coin, options) {
+  var today = todayStartUTC();
+  var idx = 0;
+  function next() {
+    if (idx >= options.length) return Promise.resolve(null);
+    var ex = options[idx++];
+    return ex.candles(coin.sym).then(function (rows) {
+      rows = (rows || []).filter(function (r) { return isFinite(r.c) && isFinite(r.t); }).sort(function (a, b) { return a.t - b.t; });
+      if (rows.length < 16 || rows[rows.length - 1].t < today - DAY) return next();
+      return { ex: ex.name, rows: rows };
+    }).catch(function () { return next(); });
+  }
+  return next();
+}
+
+function setStatus(msg, isErr) {
+  var el = $("#status");
+  el.textContent = msg || "";
+  el.className = "status" + (isErr ? " err" : "");
+}
+function setProgress(f) { $("#barFill").style.width = Math.round(f * 100) + "%"; }
+
+function scan() {
+  if (state.scanning) return Promise.resolve();
+  state.scanning = true;
+  $("#go").disabled = true;
+  setProgress(0.02);
+  setStatus("در حال دریافت فهرست ارزها از CoinGecko…");
+  var top;
+  return fetchTop().then(function (a) {
+    top = a.filter(function (c) { return !isExcluded(c); }).map(function (c) {
+      return { id: c.id, rank: c.market_cap_rank, sym: String(c.symbol).toUpperCase(), name: c.name, img: c.image, price: c.current_price, ch: c.price_change_percentage_24h };
+    });
+    setProgress(0.08);
+    setStatus("در حال گرفتن فهرست جفت‌ارزها از صرافی‌ها…");
+    return Promise.all(EXCHANGES.map(function (ex) {
+      return Promise.race([ex.tickers(), sleep(15000).then(function () { throw new Error("timeout"); })])
+        .then(function (m) { return { ex: ex, map: m }; })
+        .catch(function () { return { ex: ex, map: null }; });
+    }));
+  }).then(function (maps) {
+    var live = maps.filter(function (m) { return m.map && m.map.size; });
+    if (!live.length) throw new Error("NOEX");
+    var plan = [];
+    var results = [];
+    var missing = [];
+    top.forEach(function (coin) {
+      var opts = [];
+      live.forEach(function (m) {
+        var p = m.map.get(coin.sym);
+        if (p > 0 && (!coin.price || Math.abs(p / coin.price - 1) < 0.25)) opts.push(m.ex);
+      });
+      if (opts.length) plan.push({ coin: coin, opts: opts }); else missing.push(coin);
+    });
+    var done = 0;
+    setStatus("در حال محاسبه RSI… 0 از " + plan.length);
+    return pool(plan, 8, function (job) {
+      return fetchCandles(job.coin, job.opts).then(function (res) {
+        done++;
+        if (done % 5 === 0 || done === plan.length) {
+          setStatus("در حال محاسبه RSI… " + done + " از " + plan.length);
+          setProgress(0.1 + 0.9 * done / plan.length);
+        }
+        if (!res) { missing.push(job.coin); return; }
+        var closes = res.rows.map(function (r) { return r.c; });
+        var hasLive = res.rows[res.rows.length - 1].t >= todayStartUTC();
+        var closed = hasLive ? closes.slice(0, -1) : closes;
+        var c = job.coin;
+        results.push({
+          id: c.id, rank: c.rank, sym: c.sym, name: c.name, img: c.img, price: c.price, ch: c.ch, ex: res.ex,
+          rl: closes.length >= MIN_CLOSES ? rsi(closes, 14) : null,
+          rc: closed.length >= MIN_CLOSES ? rsi(closed, 14) : null
+        });
+      });
+    }).then(function () {
+      state.coins = results;
+      state.missing = missing.sort(function (a, b) { return (a.rank || 9999) - (b.rank || 9999); }).map(function (c) { return c.sym; });
+      state.ts = Date.now();
+      saveCache();
+    });
+  }).then(function () {
+    setProgress(1);
+    setStatus("");
+  }).catch(function (e) {
+    setProgress(0);
+    if (e && e.message === "NOEX") {
+      setStatus("به هیچ‌کدام از صرافی‌ها وصل نشدم. اگه VPN دارید روشنش کنید و دوباره بزنید.", true);
+    } else {
+      setStatus("دریافت فهرست ارزها ناموفق بود (" + ((e && e.message) || "خطا") + "). چند دقیقه بعد یا با VPN دوباره امتحان کنید.", true);
+    }
+  }).then(function () {
+    state.scanning = false;
+    $("#go").disabled = false;
+    render();
+    setTimeout(function () { if (!state.scanning) setProgress(0); }, 800);
+  });
+}
+
+/* ---------- render ---------- */
+function val(c) { return state.mode === "live" ? c.rl : c.rc; }
+function fmtPrice(p) {
+  if (p == null || !isFinite(p)) return "-";
+  if (p >= 1000) return p.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  if (p >= 1) return p.toFixed(2);
+  if (p >= 0.0001) return Number(p.toPrecision(3)).toString();
+  return p.toFixed(9).replace(/0+$/, "");
+}
+function ageText(ts) {
+  if (!ts) return "";
+  var m = Math.round((Date.now() - ts) / 60000);
+  if (m < 1) return "همین الان";
+  if (m < 60) return m + " دقیقه پیش";
+  var h = Math.round(m / 60);
+  if (h < 48) return h + " ساعت پیش";
+  return Math.round(h / 24) + " روز پیش";
+}
+
+function render() {
+  $("#thrVal").textContent = state.thr;
+  $("#thr").value = state.thr;
+  $("#modeLive").setAttribute("aria-pressed", state.mode === "live");
+  $("#modeClosed").setAttribute("aria-pressed", state.mode === "closed");
+  $("#tabLow").setAttribute("aria-pressed", state.tab === "low");
+  $("#tabAll").setAttribute("aria-pressed", state.tab === "all");
+
+  var scored = state.coins.filter(function (c) { return val(c) != null; }).sort(function (a, b) { return val(a) - val(b); });
+  var low = scored.filter(function (c) { return val(c) < state.thr; });
+  $("#tabLow").textContent = "زیر " + state.thr + " (" + low.length + ")";
+  $("#tabAll").textContent = "همه ارزها (" + scored.length + ")";
+
+  var q = state.q.trim().toLowerCase();
+  var shown = (state.tab === "low" ? low : scored).filter(function (c) {
+    return !q || c.sym.toLowerCase().indexOf(q) > -1 || String(c.name).toLowerCase().indexOf(q) > -1;
+  });
+
+  var ul = $("#list");
+  if (!state.coins.length) {
+    ul.innerHTML = '<li class="empty">' + (state.scanning ? "در حال بررسی ارزها…" : "هنوز داده‌ای نیست. دکمه‌ی بروزرسانی را بزنید.") + "</li>";
+  } else if (!shown.length) {
+    ul.innerHTML = '<li class="empty">' + (q ? "ارزی با این نام پیدا نشد." : "الان هیچ ارزی زیر " + state.thr + " نیست.") + "</li>";
+  } else {
+    ul.innerHTML = shown.map(function (c) {
+      var v = val(c), isLow = v < state.thr;
+      var ch = c.ch == null ? "" : '<span class="ch ' + (c.ch >= 0 ? "up" : "dn") + ' num">' + (c.ch >= 0 ? "+" : "") + c.ch.toFixed(1) + "%</span>";
+      return '<li class="row">' +
+        '<span class="rk num">' + (c.rank || "") + "</span>" +
+        '<img class="ic" src="' + esc(c.img || "") + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' +
+        '<div class="nm"><b>' + esc(c.sym) + "</b><span>" + esc(c.name) + "</span></div>" +
+        '<div class="mt"><span class="num">$' + fmtPrice(c.price) + "</span>" + ch + '<span class="num">' + esc(c.ex) + "</span></div>" +
+        '<div class="rs"><span class="rv num' + (isLow ? " low" : "") + '">' + v.toFixed(1) + '</span><div class="gg"><i style="left:' + Math.max(0, Math.min(100, v)) + '%"></i></div></div>' +
+        "</li>";
+    }).join("");
+  }
+
+  if (!state.scanning && state.ts && !$("#status").classList.contains("err")) {
+    var noRsi = state.coins.length - scored.length;
+    setStatus("آخرین بروزرسانی: " + ageText(state.ts) + " · " + scored.length + " ارز بررسی شد" + (noRsi > 0 ? " · " + noRsi + " ارز سابقه‌ی کافی نداشت" : ""));
+  }
+
+  var miss = state.missing || [];
+  var box = $("#missBox");
+  box.hidden = !miss.length;
+  if (miss.length) {
+    $("#missSum").textContent = miss.length + " ارز از ۵۰۰ ارز برتر بررسی نشد (جفت‌ارز USDT نداشتند)";
+    $("#missList").textContent = miss.join("، ");
+  }
+}
+
+/* ---------- wiring ---------- */
+$("#go").addEventListener("click", function () { $("#status").className = "status"; scan(); });
+$("#thr").addEventListener("input", function (e) { state.thr = Number(e.target.value); savePrefs(); render(); });
+$("#modeLive").addEventListener("click", function () { state.mode = "live"; savePrefs(); render(); });
+$("#modeClosed").addEventListener("click", function () { state.mode = "closed"; savePrefs(); render(); });
+$("#tabLow").addEventListener("click", function () { state.tab = "low"; savePrefs(); render(); });
+$("#tabAll").addEventListener("click", function () { state.tab = "all"; savePrefs(); render(); });
+$("#q").addEventListener("input", function (e) { state.q = e.target.value; render(); });
+
+loadPrefs();
+var hadCache = loadCache();
+render();
+if (!hadCache) scan();
+</script>
+</body>
+</html>
