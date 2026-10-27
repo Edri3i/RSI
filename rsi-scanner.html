@@ -148,6 +148,8 @@ button:focus-visible, input:focus-visible, summary:focus-visible, .row:focus-vis
 .tag { font-size: .72rem; line-height: 1.6; padding: 0 8px; border-radius: 999px; font-style: normal; font-weight: 700; }
 .tag.new { background: var(--accent); color: var(--accent-ink); }
 .tag.mx { background: var(--up-bg); color: var(--up); }
+.tag.in { background: var(--up-bg); color: var(--up); border: 1px solid var(--up); }
+.tag.out { background: var(--signal-bg); color: var(--signal); }
 .more { margin-inline-start: auto; font-size: .76rem; color: var(--muted); }
 .row[aria-expanded=true] .more { color: var(--accent); }
 
@@ -187,6 +189,9 @@ button:focus-visible, input:focus-visible, summary:focus-visible, .row:focus-vis
 .foot p { margin: 6px 0 0; }
 @media (max-width: 420px) { .sc { grid-template-columns: 6.6rem minmax(0, 1fr) 2.4rem; } h1 { font-size: 1.7rem; } }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+[hidden] { display: none !important; }
+.fseg { max-width: 20rem; }
+.sig { margin: 0; font-size: .82rem; padding: 8px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); }
 </style>
 </head>
 <body>
@@ -229,7 +234,12 @@ button:focus-visible, input:focus-visible, summary:focus-visible, .row:focus-vis
       <button type="button" id="tabRsi" aria-pressed="true">RSI</button>
       <button type="button" id="tabMacd" aria-pressed="false">MACD</button>
       <button type="button" id="tabBoth" aria-pressed="false">هر دو</button>
+      <button type="button" id="tabFlow" aria-pressed="false">پول هوشمند</button>
       <button type="button" id="tabAll" aria-pressed="false">همه</button>
+    </div>
+    <div class="seg fseg" id="flowSeg" role="group" aria-label="جهت جریان پول" hidden>
+      <button type="button" id="flowIn" aria-pressed="true">ورود پول</button>
+      <button type="button" id="flowOut" aria-pressed="false">خروج پول</button>
     </div>
     <input class="search" id="q" type="search" placeholder="جست‌وجوی نام یا نماد ارز" autocomplete="off">
   </section>
@@ -242,9 +252,16 @@ button:focus-visible, input:focus-visible, summary:focus-visible, .row:focus-vis
       <p id="missList"></p>
     </details>
     <details>
+      <summary>تنظیمات پیشرفته</summary>
+      <p><label for="ghTok">توکن GitHub (اختیاری)</label></p>
+      <p><input class="search" id="ghTok" type="password" autocomplete="off" placeholder="github_pat_..." dir="ltr"></p>
+      <p>بدون توکن، GitHub فقط حدود ۶۰ درخواست در ساعت می‌دهد و بعد از آن امتیاز توسعه نمایش داده نمی‌شود. توکن فقط روی همین گوشی ذخیره می‌شود و فقط به api.github.com فرستاده می‌شود.</p>
+    </details>
+    <details>
       <summary>راهنما و توضیح معیارها</summary>
       <p><b>RSI:</b> ۱۴ دوره‌ای به روش Wilder. «جدید» یعنی کندل قبلی RSI بالاتر از آستانه بود و کندل فعلی وارد ناحیه‌ی اشباع فروش شده.</p>
       <p><b>MACD:</b> تقاطع صعودی یعنی خط MACD (۱۲ و ۲۶) خط سیگنال (۹) را از پایین به بالا قطع کرده، در حالی که هر دو زیر صفر هستند. تقاطع تا ۳ کندل اخیر نشان داده می‌شود و کنارش نوشته چند کندل پیش رخ داده.</p>
+      <p><b>پول هوشمند:</b> شاخصی تخمینی از جریان پول که از کندل‌ها حساب می‌شود: CMF، تغییر حجم‌های خرید و فروش، سهم خرید تهاجمی (فقط برای ارزهایی که کندلشان از Binance آمده) و جهش حجم. عدد از ۱۰۰- تا ۱۰۰+ است و از ۲۵+ «ورود پول» و از ۲۵- «خروج پول» نوشته می‌شود. تب «پول هوشمند» از میان ارزهایی که RSI پایین یا تقاطع MACD دارند، آن‌هایی را نشان می‌دهد که ورود پول (یا با کلید کناری، خروج پول) دارند. در پنل هر ارز، اگر فیوچرز USDT در Binance داشته باشد، سهم لانگ معامله‌گران بزرگ در برابر کل بازار، تغییر Open Interest و نرخ فاندینگ هم نشان داده می‌شود. این داده‌ی کیف‌پول‌های برچسب‌خورده (مثل Nansen) نیست.</p>
       <p><b>تحلیل بنیادی:</b> با لمس هر ردیف باز می‌شود. امتیازها از ۱۰ هستند و فقط یک جمع‌بندی ساده از داده‌های CoinGecko و GitHub‌اند. پیش‌بینی قیمت نیستند و ارز با امتیاز بالا هم می‌تواند افت کند.</p>
     </details>
     <p>فهرست ارزها از CoinGecko و کندل‌ها از صرافی‌های Binance، Bybit، OKX، KuCoin و Gate (به همین ترتیب) گرفته می‌شود. ارزی که جفت‌ارز USDT نداشته باشد بررسی نمی‌شود. استیبل‌کوین‌ها و توکن‌های بسته‌بندی‌شده کنار گذاشته شده‌اند.</p>
@@ -304,13 +321,52 @@ function macdCross(closes, look) {
   }
   return -1;
 }
-function analyze(closes, minN) {
+/* Estimated money flow from candles (a proxy for "smart money", not wallet-level data):
+   CMF(20) from high/low/close/volume, signed-volume (OBV) change over 10 candles,
+   aggressive taker-buy share over 5 candles (Binance candles only), and a volume spike ratio.
+   f = score from -100 (outflow) to +100 (inflow). */
+function flowOf(cs) {
+  if (!cs || cs.length < 22) return null;
+  var n = cs.length, w = cs.slice(-20), i, k, vol, rg;
+  var mfv = 0, vs = 0;
+  for (i = 0; i < w.length; i++) {
+    k = w[i]; vol = k.v;
+    if (!(vol >= 0) || !isFinite(vol)) continue;
+    vs += vol;
+    rg = k.h - k.l;
+    if (rg > 0 && isFinite(rg)) mfv += ((k.c - k.l) - (k.h - k.c)) / rg * vol;
+  }
+  if (!(vs > 0)) return null;
+  var cmf = mfv / vs;
+  var t = cs.slice(-11), obv = 0, sv = 0, d;
+  for (i = 1; i < t.length; i++) {
+    vol = t[i].v; if (!(vol >= 0) || !isFinite(vol)) continue;
+    d = t[i].c - t[i - 1].c; sv += vol;
+    if (d > 0) obv += vol; else if (d < 0) obv -= vol;
+  }
+  var obvN = sv > 0 ? obv / sv : 0;
+  var tbS = 0, tbV = 0, q = cs.slice(-5);
+  for (i = 0; i < q.length; i++) { if (q[i].tb >= 0 && isFinite(q[i].tb) && q[i].v > 0) { tbS += q[i].tb; tbV += q[i].v; } }
+  var tb = tbV > 0 ? tbS / tbV : null;
+  var prev = cs.slice(-23, -3), pv = 0;
+  for (i = 0; i < prev.length; i++) pv += prev[i].v >= 0 ? prev[i].v : 0;
+  var avgPrev = prev.length ? pv / prev.length : 0, rv = 0, rc = 0;
+  cs.slice(-3).forEach(function (z) { if (z.v >= 0) { rv += z.v; rc++; } });
+  var spike = avgPrev > 0 && rc ? (rv / rc) / avgPrev : null;
+  var parts = [[clamp(cmf / 0.25, -1, 1), 0.4], [clamp(obvN / 0.4, -1, 1), 0.3]];
+  if (tb !== null) parts.push([clamp((tb - 0.5) / 0.1, -1, 1), 0.3]);
+  var sw = 0, sx = 0;
+  parts.forEach(function (p) { sw += p[1]; sx += p[0] * p[1]; });
+  return { f: Math.round(100 * sx / sw), cmf: Math.round(cmf * 100) / 100, tb: tb === null ? null : Math.round(tb * 1000) / 1000, vs: spike === null ? null : Math.round(spike * 10) / 10 };
+}
+function analyze(closes, minN, candles) {
   var r = closes.length >= minN ? rsi(closes, 14) : null;
   var rp = (r !== null && closes.length - 1 >= minN) ? rsi(closes.slice(0, -1), 14) : null;
   var x = closes.length >= 36 ? macdCross(closes, 3) : null;
-  return { r: r, rp: rp, x: x };
+  var fl = candles ? flowOf(candles) : null;
+  return { r: r, rp: rp, x: x, f: fl ? fl.f : null, cm: fl ? fl.cmf : null, tb: fl ? fl.tb : null, vs: fl ? fl.vs : null };
 }
-window.__rsi = rsi; window.__macdCross = macdCross; window.__analyze = analyze;
+window.__rsi = rsi; window.__macdCross = macdCross; window.__analyze = analyze; window.__flow = flowOf;
 
 /* ================= constants ================= */
 var TFS = {
@@ -320,8 +376,9 @@ var TFS = {
 };
 var LIMIT = 200;
 var PREF_KEY = "rsi-scanner-prefs-v2";
-var CACHE_PREFIX = "rsi-scanner-v2-";
-var DETAIL_KEY = "rsi-detail-v2";
+var CACHE_PREFIX = "rsi-scanner-v3-";
+var DETAIL_KEY = "rsi-detail-v3";
+var GH_TOKEN_KEY = "edrisi-gh-token";
 var SHARED_TTL = 10 * 60000;
 var DETAIL_TTL = 12 * 3600000;
 var STABLE = new Set(("usdt usdc dai fdusd tusd usde usds usdd pyusd busd usdp gusd frax lusd susd eurc eurt usdy usdtb usd0 usdx rlusd bfusd usdf usdg usdt0 xaut paxg wbtc weth steth wsteth weeth cbbtc cbeth reth wbeth wbnb meth ezeth rseth lbtc solvbtc tbtc usdc.e usyc buidl bsc-usd susde sdai syrupusdc").split(" "));
@@ -331,10 +388,12 @@ function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "
 function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
 
-function getJSON(url, ms) {
+function getJSON(url, ms, headers) {
   var ctl = new AbortController();
   var t = setTimeout(function () { ctl.abort(); }, ms || 12000);
-  return fetch(url, { signal: ctl.signal }).then(function (r) {
+  var opt = { signal: ctl.signal };
+  if (headers) opt.headers = headers;
+  return fetch(url, opt).then(function (r) {
     if (!r.ok) { var e = new Error("HTTP " + r.status); e.status = r.status; throw e; }
     return r.json();
   }).finally(function () { clearTimeout(t); });
@@ -365,7 +424,7 @@ var EXCHANGES = [
     },
     candles: function (b, tf) {
       return binGet("/api/v3/klines?symbol=" + encodeURIComponent(b) + "USDT&interval=" + TFS[tf].bin + "&limit=" + LIMIT).then(function (rows) {
-        return rows.map(function (r) { return { t: Number(r[0]), c: parseFloat(r[4]) }; });
+        return rows.map(function (r) { return { t: Number(r[0]), c: parseFloat(r[4]), h: parseFloat(r[2]), l: parseFloat(r[3]), v: parseFloat(r[5]), tb: parseFloat(r[9]) }; });
       });
     }
   },
@@ -381,7 +440,7 @@ var EXCHANGES = [
     candles: function (b, tf) {
       return getJSON("https://api.bybit.com/v5/market/kline?category=spot&symbol=" + encodeURIComponent(b) + "USDT&interval=" + TFS[tf].byb + "&limit=" + LIMIT).then(function (j) {
         var rows = (j.result && j.result.list) || [];
-        return rows.map(function (r) { return { t: Number(r[0]), c: parseFloat(r[4]) }; }).reverse();
+        return rows.map(function (r) { return { t: Number(r[0]), c: parseFloat(r[4]), h: parseFloat(r[2]), l: parseFloat(r[3]), v: parseFloat(r[5]) }; }).reverse();
       });
     }
   },
@@ -396,7 +455,7 @@ var EXCHANGES = [
     },
     candles: function (b, tf) {
       return getJSON("https://www.okx.com/api/v5/market/candles?instId=" + encodeURIComponent(b) + "-USDT&bar=" + TFS[tf].okx + "&limit=" + LIMIT).then(function (j) {
-        return (j.data || []).map(function (r) { return { t: Number(r[0]), c: parseFloat(r[4]) }; }).reverse();
+        return (j.data || []).map(function (r) { return { t: Number(r[0]), c: parseFloat(r[4]), h: parseFloat(r[2]), l: parseFloat(r[3]), v: parseFloat(r[5]) }; }).reverse();
       });
     }
   },
@@ -411,7 +470,7 @@ var EXCHANGES = [
     },
     candles: function (b, tf) {
       return getJSON("https://api.kucoin.com/api/v1/market/candles?type=" + TFS[tf].kuc + "&symbol=" + encodeURIComponent(b) + "-USDT").then(function (j) {
-        return ((j && j.data) || []).slice(0, LIMIT).map(function (r) { return { t: Number(r[0]) * 1000, c: parseFloat(r[2]) }; }).reverse();
+        return ((j && j.data) || []).slice(0, LIMIT).map(function (r) { return { t: Number(r[0]) * 1000, c: parseFloat(r[2]), h: parseFloat(r[3]), l: parseFloat(r[4]), v: parseFloat(r[5]) }; }).reverse();
       });
     }
   },
@@ -426,7 +485,7 @@ var EXCHANGES = [
     },
     candles: function (b, tf) {
       return getJSON("https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=" + encodeURIComponent(b) + "_USDT&interval=" + TFS[tf].gate + "&limit=" + LIMIT).then(function (rows) {
-        return rows.map(function (r) { return { t: Number(r[0]) * 1000, c: parseFloat(r[2]) }; });
+        return rows.map(function (r) { return { t: Number(r[0]) * 1000, c: parseFloat(r[2]), h: parseFloat(r[3]), l: parseFloat(r[4]), v: r[6] !== undefined ? parseFloat(r[6]) : parseFloat(r[1]) / parseFloat(r[2]) }; });
       });
     }
   }
@@ -435,7 +494,7 @@ var EXCHANGES = [
 /* ================= state ================= */
 var state = {
   tf: "1d", data: {}, scanning: false, tab: "rsi", q: "", thr: 30, mode: "live", theme: "auto",
-  err: "", open: {}, detail: {}, top: null, tick: null
+  err: "", open: {}, detail: {}, top: null, tick: null, flow: "in", fut: {}
 };
 function cur() { return state.data[state.tf] || { coins: [], ts: 0, missing: [] }; }
 
@@ -444,13 +503,14 @@ function loadPrefs() {
     var p = JSON.parse(localStorage.getItem(PREF_KEY) || "{}");
     if (p.thr >= 15 && p.thr <= 40) state.thr = p.thr;
     if (p.mode === "live" || p.mode === "closed") state.mode = p.mode;
-    if (["rsi", "macd", "both", "all"].indexOf(p.tab) > -1) state.tab = p.tab;
+    if (["rsi", "macd", "both", "flow", "all"].indexOf(p.tab) > -1) state.tab = p.tab;
+    if (p.flow === "in" || p.flow === "out") state.flow = p.flow;
     if (TFS[p.tf]) state.tf = p.tf;
     if (["auto", "dark", "light"].indexOf(p.theme) > -1) state.theme = p.theme;
   } catch (e) {}
 }
 function savePrefs() {
-  try { localStorage.setItem(PREF_KEY, JSON.stringify({ thr: state.thr, mode: state.mode, tab: state.tab, tf: state.tf, theme: state.theme })); } catch (e) {}
+  try { localStorage.setItem(PREF_KEY, JSON.stringify({ thr: state.thr, mode: state.mode, tab: state.tab, flow: state.flow, tf: state.tf, theme: state.theme })); } catch (e) {}
 }
 function loadCache(tf) {
   if (state.data[tf]) return true;
@@ -595,10 +655,11 @@ function scan() {
         var closes = res.rows.map(function (r) { return r.c; });
         var hasLive = res.rows[res.rows.length - 1].t + T.ms > Date.now();
         var closed = hasLive ? closes.slice(0, -1) : closes;
+        var closedRows = hasLive ? res.rows.slice(0, -1) : res.rows;
         var c = job.coin;
         results.push({
           id: c.id, rank: c.rank, sym: c.sym, name: c.name, img: c.img, price: c.price, ch: c.ch, ex: res.ex,
-          L: analyze(closes, T.min), C: analyze(closed, T.min)
+          L: analyze(closes, T.min, res.rows), C: analyze(closed, T.min, closedRows)
         });
       });
     }).then(function () {
@@ -642,15 +703,45 @@ function slim(j) {
     circ: md.circulating_supply, tot: md.total_supply, max: md.max_supply
   };
 }
+function ghToken() { try { return localStorage.getItem(GH_TOKEN_KEY) || ""; } catch (e) { return ""; } }
+function sumLast(a, n) { var t = 0; for (var i = Math.max(0, a.length - n); i < a.length; i++) t += Number(a[i]) || 0; return t; }
 function fetchGithub(urls) {
-  var picks = urls.slice(0, 2);
-  return Promise.all(picks.map(function (u) {
+  var tok = ghToken(), hd = tok ? { "Authorization": "Bearer " + tok, "Accept": "application/vnd.github+json" } : undefined;
+  var limited = false;
+  return Promise.all(urls.slice(0, 2).map(function (u) {
     var m = u.match(/github\.com\/([^\/]+)\/([^\/#?]+)/);
     if (!m) return null;
-    return getJSON("https://api.github.com/repos/" + encodeURIComponent(m[1]) + "/" + encodeURIComponent(m[2].replace(/\.git$/, "")), 12000)
-      .then(function (r) { return { name: r.full_name, pushed: r.pushed_at, stars: r.stargazers_count || 0, forks: r.forks_count || 0, arch: !!r.archived }; })
-      .catch(function () { return null; });
-  })).then(function (a) { return a.filter(Boolean); });
+    var repo = encodeURIComponent(m[1]) + "/" + encodeURIComponent(m[2].replace(/\.git$/, ""));
+    return getJSON("https://api.github.com/repos/" + repo, 12000, hd)
+      .then(function (r) { return { repo: repo, name: r.full_name, pushed: r.pushed_at, stars: r.stargazers_count || 0, forks: r.forks_count || 0, arch: !!r.archived, issues: r.open_issues_count || 0 }; })
+      .catch(function (e) { if (e && (e.status === 403 || e.status === 429)) limited = true; return null; });
+  })).then(function (a) {
+    a = a.filter(Boolean);
+    if (!a.length) return { list: [], limited: limited };
+    a.sort(function (x, y) { return new Date(y.pushed) - new Date(x.pushed); });
+    var best = a[0];
+    return Promise.all([
+      getJSON("https://api.github.com/repos/" + best.repo + "/stats/participation", 12000, hd).then(function (p) {
+        var all = (p && p.all) || [];
+        return all.length >= 8 ? { c4: sumLast(all, 4), c26: sumLast(all, 26) } : null;
+      }).catch(function () { return null; }),
+      getJSON("https://api.github.com/repos/" + best.repo + "/releases/latest", 12000, hd).then(function (r) { return (r && r.published_at) || null; }).catch(function () { return null; })
+    ]).then(function (x) {
+      if (x[0]) { best.c4 = x[0].c4; best.c26 = x[0].c26; }
+      if (x[1]) best.rel = x[1];
+      return { list: a, limited: limited };
+    });
+  });
+}
+var chainsCache = null;
+function fetchChains() {
+  if (chainsCache && Date.now() - chainsCache.ts < 3600000) return Promise.resolve(chainsCache.map);
+  return getJSON("https://api.llama.fi/v2/chains", 15000).then(function (a) {
+    var m = {};
+    (a || []).forEach(function (x) { if (x && x.gecko_id && x.tvl > 0) m[x.gecko_id] = x.tvl; });
+    chainsCache = { ts: Date.now(), map: m };
+    return m;
+  }).catch(function () { return null; });
 }
 function readDetailCache() { try { return JSON.parse(localStorage.getItem(DETAIL_KEY) || "{}"); } catch (e) { return {}; } }
 function writeDetailCache(id, d) {
@@ -664,25 +755,69 @@ function writeDetailCache(id, d) {
 }
 function loadDetail(id) {
   var cached = readDetailCache()[id];
-  if (cached && Date.now() - cached.ts < DETAIL_TTL) { state.detail[id] = { s: "ok", d: cached.d }; render(); return Promise.resolve(); }
+  if (cached && Date.now() - cached.ts < (cached.d && cached.d.ghLimited ? 30 * 60000 : DETAIL_TTL)) { state.detail[id] = { s: "ok", d: cached.d }; render(); return Promise.resolve(); }
   state.detail[id] = { s: "loading" };
   render();
   var d;
   return getJSON("https://api.coingecko.com/api/v3/coins/" + encodeURIComponent(id) + "?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false", 20000)
     .then(function (j) {
       d = slim(j);
-      return d.repos.length ? fetchGithub(d.repos) : [];
-    }).then(function (gh) {
-      d.gh = gh; d.ghTried = true;
+      return Promise.all([d.repos.length ? fetchGithub(d.repos) : Promise.resolve({ list: [], limited: false }), fetchChains()]);
+    }).then(function (x) {
+      d.gh = x[0].list; d.ghLimited = x[0].limited; d.ghTried = true;
+      d.tvl = x[1] && x[1][id] > 0 ? x[1][id] : null;
       state.detail[id] = { s: "ok", d: d };
       writeDetailCache(id, d);
     }).catch(function (e) {
       state.detail[id] = { s: "err", m: e && e.status === 429 ? "CoinGecko موقتاً محدودیت گذاشته؛ یک دقیقه صبر کنید و دوباره باز کنید." : "اطلاعات دریافت نشد (" + ((e && e.message) || "خطا") + "). ردیف را ببندید و دوباره باز کنید." };
     }).then(render);
 }
+function loadFutures(sym) {
+  var c0 = state.fut[sym];
+  if (c0 && (c0.s === "loading" || (c0.ts && Date.now() - c0.ts < SHARED_TTL))) return;
+  state.fut[sym] = { s: "loading" };
+  var q = encodeURIComponent(sym) + "USDT", base = "https://fapi.binance.com";
+  function opt(url) { return getJSON(base + url, 12000).catch(function () { return null; }); }
+  Promise.all([
+    opt("/futures/data/topLongShortPositionRatio?symbol=" + q + "&period=1d&limit=7"),
+    opt("/futures/data/globalLongShortAccountRatio?symbol=" + q + "&period=1d&limit=7"),
+    opt("/futures/data/openInterestHist?symbol=" + q + "&period=1d&limit=8"),
+    opt("/fapi/v1/premiumIndex?symbol=" + q)
+  ]).then(function (a) {
+    var top = Array.isArray(a[0]) && a[0].length ? a[0] : null, glob = Array.isArray(a[1]) && a[1].length ? a[1] : null;
+    var oi = Array.isArray(a[2]) && a[2].length > 1 ? a[2] : null, fp = a[3] && a[3].lastFundingRate !== undefined ? a[3] : null;
+    if (!top && !glob && !oi && !fp) { state.fut[sym] = { s: "na", ts: Date.now() }; return; }
+    var d = {};
+    if (top) { d.topNow = parseFloat(top[top.length - 1].longAccount) * 100; d.topOld = parseFloat(top[0].longAccount) * 100; }
+    if (glob) d.globNow = parseFloat(glob[glob.length - 1].longAccount) * 100;
+    if (oi) { var o0 = parseFloat(oi[0].sumOpenInterestValue), o1 = parseFloat(oi[oi.length - 1].sumOpenInterestValue); if (o0 > 0) d.oiCh = (o1 / o0 - 1) * 100; }
+    if (fp) d.fund = parseFloat(fp.lastFundingRate) * 100;
+    state.fut[sym] = { s: "ok", ts: Date.now(), d: d };
+  }).catch(function () { state.fut[sym] = { s: "na", ts: Date.now() }; }).then(render);
+}
+function futHtml(c) {
+  var fu = state.fut[c.sym];
+  var h = "<h3>موقعیت معامله‌گران بزرگ <small class=\"dm\">فیوچرز Binance</small></h3>";
+  if (!fu || fu.s === "loading") return h + '<p class="dm">در حال دریافت…</p>';
+  if (fu.s !== "ok") return h + '<p class="dm">داده‌ای پیدا نشد (احتمالاً این ارز فیوچرز USDT در Binance ندارد یا Binance وصل نشد).</p>';
+  var d = fu.d, f = [];
+  function sg(n, k) { return (n >= 0 ? "+" : "") + n.toFixed(k); }
+  if (d.topNow !== undefined) f.push(["لانگ معامله‌گران بزرگ", d.topNow.toFixed(0) + "% (۷ روز پیش " + d.topOld.toFixed(0) + "%)"]);
+  if (d.globNow !== undefined) f.push(["لانگ کل معامله‌گران", d.globNow.toFixed(0) + "%"]);
+  if (d.oiCh !== undefined) f.push(["تغییر Open Interest ۷ روزه", fmtPct(d.oiCh)]);
+  if (d.fund !== undefined) f.push(["نرخ فاندینگ", sg(d.fund, 3) + "%"]);
+  h += '<div class="facts">' + f.map(function (x) { return "<div>" + x[0] + "<b>" + esc(x[1]) + "</b></div>"; }).join("") + "</div>";
+  if (d.topNow !== undefined && d.globNow !== undefined) {
+    var diff = d.topNow - d.globNow;
+    h += '<p class="sig">' + (diff >= 5 ? "معامله‌گران بزرگ از بقیه‌ی بازار لانگ‌ترند (" + diff.toFixed(0) + " واحد درصد بیشتر)." : diff <= -5 ? "معامله‌گران بزرگ از بقیه‌ی بازار شورت‌ترند (" + Math.abs(diff).toFixed(0) + " واحد درصد کمتر لانگ)." : "موقعیت معامله‌گران بزرگ نزدیک به کل بازار است.") + "</p>";
+  }
+  return h;
+}
 function toggle(id) {
   if (state.open[id]) { delete state.open[id]; render(); return; }
   state.open[id] = true;
+  var coin0 = cur().coins.filter(function (x) { return x.id === id; })[0];
+  if (coin0) loadFutures(coin0.sym);
   var d = state.detail[id];
   if (!d || d.s === "err") loadDetail(id); else render();
 }
@@ -696,9 +831,14 @@ function devScore(d) {
   d.gh.forEach(function (g) {
     var days = (Date.now() - new Date(g.pushed).getTime()) / 86400000;
     var rec = days <= 7 ? 10 : days <= 30 ? 8 : days <= 90 ? 6 : days <= 180 ? 4 : days <= 365 ? 2 : 0.5;
-    var s = 0.6 * rec + 0.25 * lg(g.stars, 10000) + 0.15 * lg(g.forks, 3000);
-    if (g.arch) s = Math.min(s, 2);
-    best = Math.max(best, s);
+    var parts = [[rec, 0.35], [lg(g.stars, 10000), 0.15], [lg(g.forks, 3000), 0.10]];
+    if (g.c4 !== undefined && g.c4 !== null) parts.push([lg(g.c4, 150), 0.25]);
+    if (g.rel) { var rd = (Date.now() - new Date(g.rel).getTime()) / 86400000; parts.push([rd <= 90 ? 10 : rd <= 180 ? 7 : rd <= 365 ? 4 : 1, 0.15]); }
+    var sw = 0, sv = 0;
+    parts.forEach(function (p) { sw += p[1]; sv += p[0] * p[1]; });
+    var sc = sv / sw;
+    if (g.arch) sc = Math.min(sc, 2);
+    best = Math.max(best, sc);
   });
   return best;
 }
@@ -722,6 +862,7 @@ function extFor(c) {
 }
 window.__ext = extFor;
 
+var TRACKWHALE = { BTC: "bitcoin", ETH: "ethereum", XRP: "xrp", TRX: "trx", XLM: "xlm", WLD: "wld", LINK: "link", UNI: "uni", AAVE: "aave", PEPE: "pepe", SHIB: "shib", ONDO: "ondo", ENA: "ena", LDO: "ldo", ETHFI: "ethfi", FET: "fet", SAND: "sand", POL: "pol", STRK: "strk", WLFI: "wlfi", PENDLE: "pendle", ENS: "ens", FLOKI: "floki", SYRUP: "syrup" };
 function computeScores(d, coin, v) {
   var ratio = d.mcap > 0 && d.vol >= 0 ? d.vol / d.mcap : null;
   var cap = d.max > 0 ? d.max : (d.tot > 0 ? d.tot : null);
@@ -731,8 +872,8 @@ function computeScores(d, coin, v) {
   var rankS = coin.rank ? clamp(10 - 3.2 * Math.log10(coin.rank / 10), 0, 10) : null;
   var items = [
     { k: "tech", l: "تکنیکال", n: "RSI و MACD روی همین تایم‌فریم", v: techScore(v), w: 0.25 },
-    { k: "fund", l: "بنیادی", n: "رتبه، سن پروژه، عرضه در گردش", v: avg([rankS, ageS, supplyS]), w: 0.20 },
-    { k: "dev", l: "توسعه", n: d.repos && d.repos.length ? (d.gh && d.gh.length ? "فعالیت مخزن GitHub" : "GitHub پاسخ نداد") : "مخزن GitHub ثبت نشده", v: devScore(d), w: 0.15 },
+    { k: "fund", l: "بنیادی", n: "رتبه، سن پروژه، عرضه در گردش" + (d.tvl > 0 ? "، TVL شبکه" : ""), v: avg([rankS, ageS, supplyS, d.tvl > 0 ? lg(d.tvl, 2e10) : null]), w: 0.20 },
+    { k: "dev", l: "توسعه", n: d.repos && d.repos.length ? (d.gh && d.gh.length ? "کامیت، آخرین نسخه، ستاره‌ها در GitHub" : (d.ghLimited ? "محدودیت GitHub؛ توکن را در تنظیمات پیشرفته وارد کنید" : "GitHub پاسخ نداد")) : "مخزن GitHub ثبت نشده", v: devScore(d), w: 0.15 },
     { k: "comm", l: "جامعه و محبوبیت", n: "تعداد دنبال‌کنندگان در CoinGecko", v: d.watch > 0 ? lg(d.watch, 2e6) : null, w: 0.15 },
     { k: "liq", l: "نقدشوندگی", n: "حجم ۲۴ساعته نسبت به مارکت‌کپ", v: ratio !== null ? clamp(ratio / 0.08 * 10, 0, 10) : null, w: 0.15 },
     { k: "sent", l: "احساسات کاربران", n: "رأی مثبت کاربران CoinGecko", v: d.sent > 0 ? d.sent / 10 : null, w: 0.10 }
@@ -761,6 +902,8 @@ function vOf(c) { return state.mode === "live" ? c.L : c.C; }
 function isLow(v) { return v && v.r !== null && v.r !== undefined && v.r < state.thr; }
 function hasX(v) { return v && v.x !== null && v.x !== undefined && v.x >= 0; }
 function isNew(v) { return isLow(v) && v.rp !== null && v.rp !== undefined && v.rp >= state.thr; }
+function inflow(v) { return !!v && v.f !== null && v.f !== undefined && v.f >= 25; }
+function outflow(v) { return !!v && v.f !== null && v.f !== undefined && v.f <= -25; }
 
 function fmtPrice(p) {
   if (p == null || !isFinite(p)) return "-";
@@ -798,7 +941,7 @@ function detailHtml(c, v) {
   var d = st.d, S = computeScores(d, c, v), h = "";
   h += '<div class="detail">';
   if (S.total !== null) {
-    h += '<div class="total"><span class="big tone-' + tone(S.total) + '">' + S.total.toFixed(1) + '<small class="num">از ۱۰</small></span><div><b>امتیاز کلی: ' + verdict(S.total) + "</b><small>میانگین وزنی " + S.count + " معیار از ۶. پیش‌بینی قیمت نیست.</small></div></div>";
+    h += '<div class="total"><span class="big tone-' + tone(S.total) + '">' + S.total.toFixed(1) + '<small class="num">از ۱۰</small></span><div><b>امتیاز کلی: ' + verdict(S.total) + "</b><small>میانگین وزنی " + S.count + " معیار از " + S.of + ". پیش‌بینی قیمت نیست.</small></div></div>";
   }
   h += '<div class="scores">';
   S.items.forEach(function (it) {
@@ -821,16 +964,27 @@ function detailHtml(c, v) {
     ["سن پروژه", S.years !== null && isFinite(S.years) ? S.years.toFixed(1) + " سال" : "-"],
     ["دنبال‌کنندگان", d.watch ? fmtBig(d.watch) : "-"]
   ];
+  if (d.tvl > 0) facts.push(["TVL شبکه (DeFiLlama)", "$" + fmtBig(d.tvl)]);
   if (d.gh && d.gh.length) {
     var g = d.gh[0];
     facts.push(["ستاره‌ی GitHub", fmtBig(g.stars)]);
     facts.push(["آخرین فعالیت کد", Math.max(0, Math.round((Date.now() - new Date(g.pushed).getTime()) / 86400000)) + " روز پیش"]);
+    if (g.c4 !== undefined && g.c4 !== null) facts.push(["کامیت ۴ هفته‌ی اخیر", String(g.c4)]);
+    if (g.rel) facts.push(["آخرین نسخه (release)", Math.max(0, Math.round((Date.now() - new Date(g.rel).getTime()) / 86400000)) + " روز پیش"]);
   }
   h += '<div class="facts">' + facts.map(function (f) { return "<div>" + f[0] + "<b>" + esc(f[1]) + "</b></div>"; }).join("") + "</div>";
+  if (v && v.f !== null && v.f !== undefined) {
+    var fl = v.f >= 25 ? "ورود پول" : v.f <= -25 ? "خروج پول" : "خنثی";
+    h += '<h3>جریان پول (تخمینی) <span class="num ' + (v.f >= 25 ? "tone-hi" : v.f <= -25 ? "tone-lo" : "") + '">' + fl + " · " + (v.f > 0 ? "+" : "") + v.f + "</span></h3>";
+    h += '<div class="facts"><div>CMF (۲۰ کندل)<b>' + (v.cm !== null && v.cm !== undefined ? v.cm.toFixed(2) : "-") + "</b></div><div>سهم خرید تهاجمی (Binance)<b>" + (v.tb !== null && v.tb !== undefined ? (v.tb * 100).toFixed(0) + "%" : "-") + "</b></div><div>حجم نسبت به میانگین<b>" + (v.vs !== null && v.vs !== undefined ? v.vs.toFixed(1) + "×" : "-") + "</b></div></div>";
+  }
+  h += futHtml(c);
   if (S.ext) {
     h += '<div class="facts"><div>سطح ریسک (EnterCrypto)<b>' + esc(RISK_FA[S.ext.r] || S.ext.r) + '</b></div><div>پتانسیل سفته‌بازی (EnterCrypto)<b>' + S.ext.u + ' / 10</b></div></div>';
   }
   h += '<p class="disc">منبع: CoinGecko و GitHub. CoinGecko آمار توییتر و تلگرام را دیگر در API رایگان نمی‌دهد، برای همین امتیاز جامعه بر پایه‌ی تعداد دنبال‌کنندگان و رأی کاربران است. این امتیازها توصیه‌ی خرید نیستند. <a href="https://www.coingecko.com/en/coins/' + encodeURIComponent(c.id) + '" target="_blank" rel="noopener">صفحه‌ی ' + esc(c.name) + ' در CoinGecko</a></p>';
+  var tw = TRACKWHALE[c.sym];
+  h += '<p class="disc">ردیابی نهنگ‌ها: <a href="' + (tw ? "https://trackwhale.io/" + tw + "-whale-tracker" : "https://trackwhale.io/exchange-flows") + '" target="_blank" rel="noopener">TrackWhale' + (tw ? " (" + esc(c.sym) + ")" : " (جریان صرافی‌ها)") + '</a> · <a href="https://app.nansen.ai/" target="_blank" rel="noopener">Nansen</a> (نیازمند حساب و پولی است). شاخص «جریان پول» بالا تخمینی از حجم و قیمت است و داده‌ی کیف‌پول‌های برچسب‌خورده‌ی اسمارت‌مانی نیست.</p>';
   h += '<p class="disc">منابع دیگر: <a href="https://www.bithub.ge/en/diligence/' + encodeURIComponent(c.id) + '" target="_blank" rel="noopener">گزارش Bithub</a> (امتیاز از ۱۰۰ و ۱۲ دسته، هر ۶ ساعت بروز می‌شود؛ اگر صفحه خالی یا ۴۰۴ بود برای این ارز گزارشی ندارند) · <a href="https://enter-crypto.com/crypto-reviews-comparison" target="_blank" rel="noopener">جدول مقایسه‌ی EnterCrypto</a> (فقط حدود ۹۰ ارز، داده‌ی مه ۲۰۲۶).</p>';
   h += "</div>";
   return h;
@@ -845,6 +999,8 @@ function rowHtml(c) {
   var tags = "";
   if (isNew(v)) tags += '<em class="tag new">جدید</em>';
   if (hasX(v)) tags += '<em class="tag mx">MACD ↑ زیر صفر · ' + (v.x === 0 ? "کندل جاری" : v.x + " کندل پیش") + "</em>";
+  if (inflow(v)) tags += '<em class="tag in">ورود پول' + (v.vs >= 1.8 ? " · حجم بالا" : "") + "</em>";
+  else if (outflow(v)) tags += '<em class="tag out">خروج پول</em>';
   return '<li class="item"><div class="row" data-id="' + esc(c.id) + '" role="button" tabindex="0" aria-expanded="' + open + '">' +
     '<span class="rk num">' + (c.rank || "") + "</span>" +
     '<img class="ic" src="' + esc(c.img || "") + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' +
@@ -862,25 +1018,36 @@ function render() {
   ["4h", "1d", "1w"].forEach(function (t) { $("#tf" + t).setAttribute("aria-pressed", state.tf === t); });
   $("#modeLive").setAttribute("aria-pressed", state.mode === "live");
   $("#modeClosed").setAttribute("aria-pressed", state.mode === "closed");
-  ["rsi", "macd", "both", "all"].forEach(function (t) { $("#tab" + t.charAt(0).toUpperCase() + t.slice(1)).setAttribute("aria-pressed", state.tab === t); });
+  ["rsi", "macd", "both", "flow", "all"].forEach(function (t) { $("#tab" + t.charAt(0).toUpperCase() + t.slice(1)).setAttribute("aria-pressed", state.tab === t); });
 
   var withR = D.coins.filter(function (c) { var v = vOf(c); return v.r !== null && v.r !== undefined; });
   var rsiList = withR.filter(function (c) { return isLow(vOf(c)); });
   var macdList = D.coins.filter(function (c) { return hasX(vOf(c)); });
   var bothList = rsiList.filter(function (c) { return hasX(vOf(c)); });
+  var found = D.coins.filter(function (c) { var v = vOf(c); return isLow(v) || hasX(v); });
+  var flowIn = found.filter(function (c) { return inflow(vOf(c)); });
+  var flowOut = found.filter(function (c) { return outflow(vOf(c)); });
+  var flowList = state.flow === "in" ? flowIn : flowOut;
+  $("#flowSeg").hidden = state.tab !== "flow";
+  $("#flowIn").setAttribute("aria-pressed", state.flow === "in");
+  $("#flowOut").setAttribute("aria-pressed", state.flow === "out");
+  $("#flowIn").textContent = "ورود پول (" + flowIn.length + ")";
+  $("#flowOut").textContent = "خروج پول (" + flowOut.length + ")";
   var nNew = rsiList.filter(function (c) { return isNew(vOf(c)); }).length;
   $("#tabRsi").textContent = "RSI زیر " + state.thr + " (" + rsiList.length + ")" + (nNew ? " · " + nNew + " جدید" : "");
   $("#tabMacd").textContent = "MACD ↑ زیر صفر (" + macdList.length + ")";
   $("#tabBoth").textContent = "هر دو (" + bothList.length + ")";
+  $("#tabFlow").textContent = "پول هوشمند (" + flowList.length + ")";
   $("#tabAll").textContent = "همه (" + withR.length + ")";
 
-  var base = state.tab === "rsi" ? rsiList : state.tab === "macd" ? macdList : state.tab === "both" ? bothList : withR;
+  var base = state.tab === "rsi" ? rsiList : state.tab === "macd" ? macdList : state.tab === "both" ? bothList : state.tab === "flow" ? flowList : withR;
   var q = state.q.trim().toLowerCase();
   var shown = base.filter(function (c) {
     return !q || c.sym.toLowerCase().indexOf(q) > -1 || String(c.name).toLowerCase().indexOf(q) > -1;
   }).sort(function (a, b) {
     var va = vOf(a), vb = vOf(b);
     if (state.tab === "macd") { var d = va.x - vb.x; if (d) return d; }
+    if (state.tab === "flow") { var df = state.flow === "in" ? vb.f - va.f : va.f - vb.f; if (df) return df; }
     var ra = va.r === null || va.r === undefined ? 101 : va.r, rb = vb.r === null || vb.r === undefined ? 101 : vb.r;
     return ra - rb;
   });
@@ -889,7 +1056,7 @@ function render() {
   if (!D.coins.length) {
     ul.innerHTML = '<li class="empty">' + (state.scanning ? "در حال بررسی ارزها…" : "برای تایم‌فریم " + TFS[state.tf].label + " هنوز داده‌ای نیست. دکمه‌ی بروزرسانی را بزنید.") + "</li>";
   } else if (!shown.length) {
-    var why = state.tab === "macd" ? "الان هیچ ارزی تقاطع صعودی MACD زیر صفر ندارد." : state.tab === "both" ? "الان ارزی نیست که هم RSI زیر " + state.thr + " و هم تقاطع MACD داشته باشد." : state.tab === "rsi" ? "الان هیچ ارزی زیر " + state.thr + " نیست." : "";
+    var why = state.tab === "macd" ? "الان هیچ ارزی تقاطع صعودی MACD زیر صفر ندارد." : state.tab === "both" ? "الان ارزی نیست که هم RSI زیر " + state.thr + " و هم تقاطع MACD داشته باشد." : state.tab === "flow" ? (state.flow === "in" ? "الان ارزی با RSI پایین یا تقاطع MACD نیست که ورود پول هم داشته باشد." : "الان ارزی با RSI پایین یا تقاطع MACD نیست که خروج پول داشته باشد.") : state.tab === "rsi" ? "الان هیچ ارزی زیر " + state.thr + " نیست." : "";
     ul.innerHTML = '<li class="empty">' + (q ? "ارزی با این نام پیدا نشد." : why) + "</li>";
   } else {
     ul.innerHTML = shown.map(rowHtml).join("");
@@ -925,10 +1092,14 @@ $("#tf1w").addEventListener("click", function () { setTf("1w"); });
 $("#thr").addEventListener("input", function (e) { state.thr = Number(e.target.value); savePrefs(); render(); });
 $("#modeLive").addEventListener("click", function () { state.mode = "live"; savePrefs(); render(); });
 $("#modeClosed").addEventListener("click", function () { state.mode = "closed"; savePrefs(); render(); });
-[["rsi", "Rsi"], ["macd", "Macd"], ["both", "Both"], ["all", "All"]].forEach(function (p) {
+[["rsi", "Rsi"], ["macd", "Macd"], ["both", "Both"], ["flow", "Flow"], ["all", "All"]].forEach(function (p) {
   $("#tab" + p[1]).addEventListener("click", function () { state.tab = p[0]; savePrefs(); render(); });
 });
+$("#flowIn").addEventListener("click", function () { state.flow = "in"; savePrefs(); render(); });
+$("#flowOut").addEventListener("click", function () { state.flow = "out"; savePrefs(); render(); });
 $("#q").addEventListener("input", function (e) { state.q = e.target.value; render(); });
+$("#ghTok").value = ghToken();
+$("#ghTok").addEventListener("change", function (e) { try { localStorage.setItem(GH_TOKEN_KEY, e.target.value.trim()); } catch (err) {} });
 $("#theme").addEventListener("click", function () { state.theme = effectiveDark() ? "light" : "dark"; savePrefs(); applyTheme(); });
 $("#list").addEventListener("click", function (e) {
   var row = e.target.closest("[data-id]");
