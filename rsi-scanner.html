@@ -257,6 +257,8 @@ button:focus-visible, input:focus-visible, summary:focus-visible, .row:focus-vis
 [hidden] { display: none !important; }
 .fseg { max-width: 20rem; }
 .sig { margin: 0; font-size: .82rem; padding: 10px 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.tag.wh { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); }
+#whBox { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -306,6 +308,7 @@ button:focus-visible, input:focus-visible, summary:focus-visible, .row:focus-vis
       <button type="button" id="flowIn" aria-pressed="true">ورود پول</button>
       <button type="button" id="flowOut" aria-pressed="false">خروج پول</button>
     </div>
+    <div class="sig" id="whBox" hidden><span id="whTxt"></span><button type="button" class="ib" id="whGo">بروزرسانی نهنگ‌ها</button></div>
     <input class="search" id="q" type="search" placeholder="جست‌وجوی نام یا نماد ارز" autocomplete="off">
   </section>
 
@@ -321,12 +324,15 @@ button:focus-visible, input:focus-visible, summary:focus-visible, .row:focus-vis
       <p><label for="ghTok">توکن GitHub (اختیاری)</label></p>
       <p><input class="search" id="ghTok" type="password" autocomplete="off" placeholder="github_pat_..." dir="ltr"></p>
       <p>بدون توکن، GitHub فقط حدود ۶۰ درخواست در ساعت می‌دهد و بعد از آن امتیاز توسعه نمایش داده نمی‌شود. توکن فقط روی همین گوشی ذخیره می‌شود و فقط به api.github.com فرستاده می‌شود.</p>
+      <p><label for="hlW">کیف‌پول‌های دلخواه برای ردیابی در هایپرلکوید (هر آدرس در یک خط)</label></p>
+      <p><textarea class="search" id="hlW" rows="3" dir="ltr" style="border-radius:18px" placeholder="0x..."></textarea></p>
+      <p>آدرس‌هایی که در Nansen، Arkham یا هر منبع دیگری پیدا کردید و در هایپرلکوید معامله می‌کنند را اینجا بگذارید تا کنار ۴۰ کیف‌پول برتر لیدربورد بررسی شوند.</p>
     </details>
     <details>
       <summary>راهنما و توضیح معیارها</summary>
       <p><b>RSI:</b> ۱۴ دوره‌ای به روش Wilder. «جدید» یعنی کندل قبلی RSI بالاتر از آستانه بود و کندل فعلی وارد ناحیه‌ی اشباع فروش شده.</p>
       <p><b>MACD:</b> تقاطع صعودی یعنی خط MACD (۱۲ و ۲۶) خط سیگنال (۹) را از پایین به بالا قطع کرده، در حالی که هر دو زیر صفر هستند. تقاطع تا ۳ کندل اخیر نشان داده می‌شود و کنارش نوشته چند کندل پیش رخ داده.</p>
-      <p><b>پول هوشمند:</b> شاخصی تخمینی از جریان پول که از کندل‌ها حساب می‌شود: CMF، تغییر حجم‌های خرید و فروش، سهم خرید تهاجمی (فقط برای ارزهایی که کندلشان از Binance آمده) و جهش حجم. عدد از ۱۰۰- تا ۱۰۰+ است و از ۲۵+ «ورود پول» و از ۲۵- «خروج پول» نوشته می‌شود. تب «پول هوشمند» از میان ارزهایی که RSI پایین یا تقاطع MACD دارند، آن‌هایی را نشان می‌دهد که ورود پول (یا با کلید کناری، خروج پول) دارند. در پنل هر ارز، اگر فیوچرز USDT در Binance داشته باشد، سهم لانگ معامله‌گران بزرگ در برابر کل بازار، تغییر Open Interest و نرخ فاندینگ هم نشان داده می‌شود. این داده‌ی کیف‌پول‌های برچسب‌خورده (مثل Nansen) نیست.</p>
+      <p><b>پول هوشمند:</b> شاخصی تخمینی از جریان پول که از کندل‌ها حساب می‌شود: CMF، تغییر حجم‌های خرید و فروش، سهم خرید تهاجمی (فقط برای ارزهایی که کندلشان از Binance آمده) و جهش حجم. عدد از ۱۰۰- تا ۱۰۰+ است و از ۲۵+ «ورود پول» و از ۲۵- «خروج پول» نوشته می‌شود. اگر موقعیت کیف‌پول‌های برتر هایپرلکوید (۴۰ کیف‌پول با بیشترین سود ماهانه در لیدربورد رسمی، به‌علاوه‌ی آدرس‌های دلخواه شما) برای آن ارز در دسترس باشد، ۴۵٪ امتیاز از خالص لانگ/شورت آن‌ها و ۵۵٪ از شاخص کندلی می‌آید. لانگ بودن نهنگ‌ها ممکن است هج باشد و تضمین صعود نیست. تب «پول هوشمند» از میان ارزهایی که RSI پایین یا تقاطع MACD دارند، آن‌هایی را نشان می‌دهد که ورود پول (یا با کلید کناری، خروج پول) دارند. در پنل هر ارز، اگر فیوچرز USDT در Binance داشته باشد، سهم لانگ معامله‌گران بزرگ در برابر کل بازار، تغییر Open Interest و نرخ فاندینگ هم نشان داده می‌شود. این داده‌ی کیف‌پول‌های برچسب‌خورده (مثل Nansen) نیست.</p>
       <p><b>تحلیل بنیادی:</b> با لمس هر ردیف باز می‌شود. امتیازها از ۱۰ هستند و فقط یک جمع‌بندی ساده از داده‌های CoinGecko و GitHub‌اند. پیش‌بینی قیمت نیستند و ارز با امتیاز بالا هم می‌تواند افت کند.</p>
     </details>
     <p>فهرست ارزها از CoinGecko و کندل‌ها از صرافی‌های Binance، Bybit، OKX، KuCoin و Gate (به همین ترتیب) گرفته می‌شود. ارزی که جفت‌ارز USDT نداشته باشد بررسی نمی‌شود. استیبل‌کوین‌ها و توکن‌های بسته‌بندی‌شده کنار گذاشته شده‌اند.</p>
@@ -847,12 +853,15 @@ function loadFutures(sym) {
     opt("/futures/data/topLongShortPositionRatio?symbol=" + q + "&period=1d&limit=7"),
     opt("/futures/data/globalLongShortAccountRatio?symbol=" + q + "&period=1d&limit=7"),
     opt("/futures/data/openInterestHist?symbol=" + q + "&period=1d&limit=8"),
-    opt("/fapi/v1/premiumIndex?symbol=" + q)
+    opt("/fapi/v1/premiumIndex?symbol=" + q),
+    opt("/futures/data/takerlongshortRatio?symbol=" + q + "&period=1d&limit=7")
   ]).then(function (a) {
     var top = Array.isArray(a[0]) && a[0].length ? a[0] : null, glob = Array.isArray(a[1]) && a[1].length ? a[1] : null;
     var oi = Array.isArray(a[2]) && a[2].length > 1 ? a[2] : null, fp = a[3] && a[3].lastFundingRate !== undefined ? a[3] : null;
-    if (!top && !glob && !oi && !fp) { state.fut[sym] = { s: "na", ts: Date.now() }; return; }
+    var tk = Array.isArray(a[4]) && a[4].length ? a[4] : null;
+    if (!top && !glob && !oi && !fp && !tk) { state.fut[sym] = { s: "na", ts: Date.now() }; return; }
     var d = {};
+    if (tk) { var tl = tk.slice(-3), ts = 0; tl.forEach(function (z) { ts += parseFloat(z.buySellRatio) || 0; }); d.taker = ts / tl.length; }
     if (top) { d.topNow = parseFloat(top[top.length - 1].longAccount) * 100; d.topOld = parseFloat(top[0].longAccount) * 100; }
     if (glob) d.globNow = parseFloat(glob[glob.length - 1].longAccount) * 100;
     if (oi) { var o0 = parseFloat(oi[0].sumOpenInterestValue), o1 = parseFloat(oi[oi.length - 1].sumOpenInterestValue); if (o0 > 0) d.oiCh = (o1 / o0 - 1) * 100; }
@@ -871,6 +880,7 @@ function futHtml(c) {
   if (d.globNow !== undefined) f.push(["لانگ کل معامله‌گران", d.globNow.toFixed(0) + "%"]);
   if (d.oiCh !== undefined) f.push(["تغییر Open Interest ۷ روزه", fmtPct(d.oiCh)]);
   if (d.fund !== undefined) f.push(["نرخ فاندینگ", sg(d.fund, 3) + "%"]);
+  if (d.taker !== undefined && isFinite(d.taker)) f.push(["خرید به فروش تهاجمی فیوچرز (۳ روز)", d.taker.toFixed(2) + (d.taker > 1.05 ? " (خریدار قوی‌تر)" : d.taker < 0.95 ? " (فروشنده قوی‌تر)" : "")]);
   h += '<div class="facts">' + f.map(function (x) { return "<div>" + x[0] + "<b>" + esc(x[1]) + "</b></div>"; }).join("") + "</div>";
   if (d.topNow !== undefined && d.globNow !== undefined) {
     var diff = d.topNow - d.globNow;
@@ -878,11 +888,134 @@ function futHtml(c) {
   }
   return h;
 }
+/* ================= Hyperliquid (free public API): market stats + tracked top wallets ================= */
+var HL_URL = "https://api.hyperliquid.xyz/info";
+var HL_LB = "https://stats-data.hyperliquid.xyz/Mainnet/leaderboard";
+var HL_LB_KEY = "edrisi-hl-lb-v1", HL_WALLETS_KEY = "edrisi-hl-wallets", HL_PREV_KEY = "edrisi-hl-prev-v1";
+var HL_TOP = 40, HL_MIN_ACCT = 300000;
+state.hlm = null;
+state.wh = { s: "idle", ts: 0, agg: {}, n: 0, err: "", since: 0 };
+function hlSym(n) { n = String(n); return /^k[A-Z0-9]/.test(n) ? n.slice(1) : n; }
+function hlPost(body, ms) {
+  var ctl = new AbortController();
+  var t = setTimeout(function () { ctl.abort(); }, ms || 15000);
+  return fetch(HL_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctl.signal })
+    .then(function (r) { if (!r.ok) { var e = new Error("HTTP " + r.status); e.status = r.status; throw e; } return r.json(); })
+    .finally(function () { clearTimeout(t); });
+}
+function loadHlMarket() {
+  if (state.hlm && Date.now() - state.hlm.ts < SHARED_TTL) return Promise.resolve();
+  return hlPost({ type: "metaAndAssetCtxs" }).then(function (a) {
+    var u = a[0].universe, cx = a[1], m = {}, i, c, mk, pv;
+    for (i = 0; i < u.length; i++) {
+      c = cx[i]; if (!c || u[i].isDelisted) continue;
+      mk = parseFloat(c.markPx); pv = parseFloat(c.prevDayPx);
+      m[hlSym(u[i].name)] = { fund: parseFloat(c.funding) * 100, oi: parseFloat(c.openInterest) * mk, vol: parseFloat(c.dayNtlVlm), ch: pv > 0 ? (mk / pv - 1) * 100 : null };
+    }
+    state.hlm = { ts: Date.now(), m: m };
+  }).catch(function () { state.hlm = { ts: Date.now(), m: null }; });
+}
+function readLb() { try { return JSON.parse(localStorage.getItem(HL_LB_KEY) || "null"); } catch (e) { return null; } }
+function hlWalletList() {
+  var c = readLb();
+  if (c && c.list && c.list.length && Date.now() - c.ts < 24 * 3600000) return Promise.resolve(c.list);
+  return getJSON(HL_LB, 60000).then(function (j) {
+    var rows = (j && j.leaderboardRows) || [];
+    var list = rows.map(function (r) {
+      var w = {};
+      (r.windowPerformances || []).forEach(function (p) { w[p[0]] = p[1]; });
+      return { a: r.ethAddress, v: parseFloat(r.accountValue), m: w.month ? parseFloat(w.month.pnl) : 0, mr: w.month ? parseFloat(w.month.roi) : 0, at: w.allTime ? parseFloat(w.allTime.pnl) : 0 };
+    }).filter(function (x) { return x.v >= HL_MIN_ACCT && x.m > 0 && x.mr > 0 && x.at > 0; })
+      .sort(function (a, b) { return b.m - a.m; }).slice(0, HL_TOP);
+    if (list.length) { try { localStorage.setItem(HL_LB_KEY, JSON.stringify({ ts: Date.now(), list: list })); } catch (e) {} }
+    return list;
+  });
+}
+function customWallets() {
+  try { return (localStorage.getItem(HL_WALLETS_KEY) || "").split(/[\s,;]+/).filter(function (x) { return /^0x[0-9a-fA-F]{40}$/.test(x); }); } catch (e) { return []; }
+}
+function loadWhales(force) {
+  var W = state.wh;
+  if (W.s === "loading") return Promise.resolve();
+  if (!force && W.s === "ok" && Date.now() - W.ts < 15 * 60000) return Promise.resolve();
+  W.s = "loading"; W.err = "";
+  render();
+  var stale = readLb();
+  return hlWalletList().catch(function () { return stale && stale.list ? stale.list : []; }).then(function (list) {
+    var addrs = list.map(function (x) { return x.a; });
+    customWallets().forEach(function (a) { if (addrs.indexOf(a) < 0) addrs.push(a); });
+    if (!addrs.length) throw new Error("NOWALLET");
+    var agg = {}, ok = 0;
+    return pool(addrs, 6, function (a) {
+      return hlPost({ type: "clearinghouseState", user: a }, 12000).then(function (s) {
+        ok++;
+        ((s && s.assetPositions) || []).forEach(function (p) {
+          var P = p.position; if (!P) return;
+          var sym = hlSym(P.coin), val = Math.abs(parseFloat(P.positionValue));
+          if (!(val > 0)) return;
+          var g = agg[sym] || (agg[sym] = { l: 0, s: 0, nl: 0, ns: 0 });
+          if (parseFloat(P.szi) > 0) { g.l += val; g.nl++; } else { g.s += val; g.ns++; }
+        });
+      }).catch(function () {});
+    }).then(function () {
+      if (!ok) throw new Error("HLFAIL");
+      var prev = null, net = {}, now = Date.now();
+      try { prev = JSON.parse(localStorage.getItem(HL_PREV_KEY) || "null"); } catch (e) {}
+      Object.keys(agg).forEach(function (k) { net[k] = agg[k].l - agg[k].s; });
+      W.since = 0;
+      if (prev && now - prev.ts > 30 * 60000 && now - prev.ts < 3 * 86400000) {
+        Object.keys(agg).forEach(function (k) { agg[k].d = net[k] - ((prev.net && prev.net[k]) || 0); });
+        W.since = prev.ts;
+      }
+      if (!prev || now - prev.ts > 60 * 60000) { try { localStorage.setItem(HL_PREV_KEY, JSON.stringify({ ts: now, net: net })); } catch (e) {} }
+      W.agg = agg; W.n = ok; W.ts = now; W.s = "ok";
+    });
+  }).catch(function (e) {
+    W.s = "err";
+    W.err = e && e.message === "NOWALLET" ? "لیدربورد هایپرلکوید باز نشد و آدرس دلخواهی هم وارد نشده (VPN را امتحان کنید یا آدرس‌ها را در تنظیمات پیشرفته بگذارید)." : "API هایپرلکوید پاسخ نداد؛ کمی بعد دوباره بزنید.";
+  }).then(render);
+}
+function whaleOf(sym) {
+  var g = state.wh.s === "ok" && state.wh.agg[sym];
+  if (!g) return null;
+  var t = g.l + g.s;
+  if (t < 200000 || g.nl + g.ns < 2) return null;
+  return { net: Math.round((g.l - g.s) / t * 100), p: Math.round(g.l / t * 100), l: g.l, s: g.s, nl: g.nl, ns: g.ns, d: g.d };
+}
+/* composite smart-money score: candle flow (55%) + top-wallet net long/short on Hyperliquid (45%) */
+function sf(c) {
+  var v = vOf(c), f = v && v.f !== null && v.f !== undefined ? v.f : null, w = whaleOf(c.sym);
+  if (f === null && !w) return null;
+  if (!w) return f;
+  if (f === null) return w.net;
+  return Math.round(0.55 * f + 0.45 * w.net);
+}
+function hlHtml(c, v) {
+  var m = state.hlm && state.hlm.m ? state.hlm.m[c.sym] : null, w = whaleOf(c.sym), s = sf(c), f = [];
+  var h = '<h3>پول هوشمند و هایپرلکوید <small class="dm">API عمومی و رایگان</small></h3>';
+  if (s !== null) f.push(["امتیاز ترکیبی پول هوشمند", (s > 0 ? "+" : "") + s]);
+  if (w) {
+    f.push(["لانگ نهنگ‌ها", "$" + fmtBig(w.l) + " (" + w.nl + " کیف‌پول)"]);
+    f.push(["شورت نهنگ‌ها", "$" + fmtBig(w.s) + " (" + w.ns + " کیف‌پول)"]);
+    if (w.d !== undefined) f.push(["تغییر خالص از بروزرسانی قبل", (w.d >= 0 ? "+" : "-") + "$" + fmtBig(Math.abs(w.d))]);
+  }
+  if (m) {
+    f.push(["فاندینگ ساعتی HL", (m.fund >= 0 ? "+" : "") + m.fund.toFixed(4) + "%"]);
+    f.push(["Open Interest در HL", "$" + fmtBig(m.oi)]);
+    f.push(["حجم ۲۴ساعته HL", "$" + fmtBig(m.vol)]);
+  }
+  if (!f.length) return h + '<p class="dm">' + (state.wh.s === "loading" ? "در حال دریافت…" : "این ارز در هایپرلکوید معامله نمی‌شود یا نهنگ‌های ردیابی‌شده موقعیتی در آن ندارند. برای دیدن موقعیت نهنگ‌ها یک بار تب «پول هوشمند» را باز کنید.") + "</p>";
+  h += '<div class="facts">' + f.map(function (x) { return "<div>" + x[0] + "<b>" + esc(x[1]) + "</b></div>"; }).join("") + "</div>";
+  if (w) h += '<p class="sig">' + (w.p >= 65 ? "بیشتر پول نهنگ‌های برتر هایپرلکوید روی لانگ است (" + w.p + "٪)." : w.p <= 35 ? "بیشتر پول نهنگ‌های برتر هایپرلکوید روی شورت است (" + (100 - w.p) + "٪ شورت)." : "موقعیت نهنگ‌های برتر تقریباً متعادل است.") + " ممکن است بخشی هج باشد؛ این سیگنال تأییدکننده است نه پیش‌بینی.</p>";
+  return h;
+}
+
 function toggle(id) {
   if (state.open[id]) { delete state.open[id]; render(); return; }
   state.open[id] = true;
   var coin0 = cur().coins.filter(function (x) { return x.id === id; })[0];
   if (coin0) loadFutures(coin0.sym);
+  loadHlMarket().then(render);
   var d = state.detail[id];
   if (!d || d.s === "err") loadDetail(id); else render();
 }
@@ -967,8 +1100,8 @@ function vOf(c) { return state.mode === "live" ? c.L : c.C; }
 function isLow(v) { return v && v.r !== null && v.r !== undefined && v.r < state.thr; }
 function hasX(v) { return v && v.x !== null && v.x !== undefined && v.x >= 0; }
 function isNew(v) { return isLow(v) && v.rp !== null && v.rp !== undefined && v.rp >= state.thr; }
-function inflow(v) { return !!v && v.f !== null && v.f !== undefined && v.f >= 25; }
-function outflow(v) { return !!v && v.f !== null && v.f !== undefined && v.f <= -25; }
+function inflow(c) { var s = sf(c); return s !== null && s >= 25; }
+function outflow(c) { var s = sf(c); return s !== null && s <= -25; }
 
 function fmtPrice(p) {
   if (p == null || !isFinite(p)) return "-";
@@ -1044,6 +1177,7 @@ function detailHtml(c, v) {
     h += '<div class="facts"><div>CMF (۲۰ کندل)<b>' + (v.cm !== null && v.cm !== undefined ? v.cm.toFixed(2) : "-") + "</b></div><div>سهم خرید تهاجمی (Binance)<b>" + (v.tb !== null && v.tb !== undefined ? (v.tb * 100).toFixed(0) + "%" : "-") + "</b></div><div>حجم نسبت به میانگین<b>" + (v.vs !== null && v.vs !== undefined ? v.vs.toFixed(1) + "×" : "-") + "</b></div></div>";
   }
   h += futHtml(c);
+  h += hlHtml(c, v);
   if (S.ext) {
     h += '<div class="facts"><div>سطح ریسک (EnterCrypto)<b>' + esc(RISK_FA[S.ext.r] || S.ext.r) + '</b></div><div>پتانسیل سفته‌بازی (EnterCrypto)<b>' + S.ext.u + ' / 10</b></div></div>';
   }
@@ -1064,8 +1198,10 @@ function rowHtml(c) {
   var tags = "";
   if (isNew(v)) tags += '<em class="tag new">جدید</em>';
   if (hasX(v)) tags += '<em class="tag mx">MACD ↑ زیر صفر · ' + (v.x === 0 ? "کندل جاری" : v.x + " کندل پیش") + "</em>";
-  if (inflow(v)) tags += '<em class="tag in">ورود پول' + (v.vs >= 1.8 ? " · حجم بالا" : "") + "</em>";
-  else if (outflow(v)) tags += '<em class="tag out">خروج پول</em>';
+  if (inflow(c)) tags += '<em class="tag in">ورود پول' + (v && v.vs >= 1.8 ? " · حجم بالا" : "") + "</em>";
+  else if (outflow(c)) tags += '<em class="tag out">خروج پول</em>';
+  var wz = whaleOf(c.sym);
+  if (wz) tags += '<em class="tag wh">نهنگ HL: ' + (wz.p >= 50 ? wz.p + "٪ لانگ" : (100 - wz.p) + "٪ شورت") + "</em>";
   return '<li class="item"><div class="row" data-id="' + esc(c.id) + '" role="button" tabindex="0" aria-expanded="' + open + '">' +
     '<span class="rk num">' + (c.rank || "") + "</span>" +
     '<img class="ic" src="' + esc(c.img || "") + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' +
@@ -1090,10 +1226,14 @@ function render() {
   var macdList = D.coins.filter(function (c) { return hasX(vOf(c)); });
   var bothList = rsiList.filter(function (c) { return hasX(vOf(c)); });
   var found = D.coins.filter(function (c) { var v = vOf(c); return isLow(v) || hasX(v); });
-  var flowIn = found.filter(function (c) { return inflow(vOf(c)); });
-  var flowOut = found.filter(function (c) { return outflow(vOf(c)); });
+  var flowIn = found.filter(function (c) { return inflow(c); });
+  var flowOut = found.filter(function (c) { return outflow(c); });
   var flowList = state.flow === "in" ? flowIn : flowOut;
   $("#flowSeg").hidden = state.tab !== "flow";
+  var W = state.wh;
+  $("#whBox").hidden = state.tab !== "flow";
+  $("#whTxt").textContent = W.s === "loading" ? "در حال خواندن موقعیت کیف‌پول‌های برتر هایپرلکوید…" : W.s === "ok" ? "موقعیت " + W.n + " کیف‌پول برتر هایپرلکوید · " + ageText(W.ts) : W.s === "err" ? W.err : "داده‌ی نهنگ‌های هایپرلکوید هنوز گرفته نشده.";
+  $("#whGo").disabled = W.s === "loading";
   $("#flowIn").setAttribute("aria-pressed", state.flow === "in");
   $("#flowOut").setAttribute("aria-pressed", state.flow === "out");
   $("#flowIn").textContent = "ورود پول (" + flowIn.length + ")";
@@ -1112,7 +1252,7 @@ function render() {
   }).sort(function (a, b) {
     var va = vOf(a), vb = vOf(b);
     if (state.tab === "macd") { var d = va.x - vb.x; if (d) return d; }
-    if (state.tab === "flow") { var df = state.flow === "in" ? vb.f - va.f : va.f - vb.f; if (df) return df; }
+    if (state.tab === "flow") { var df = state.flow === "in" ? sf(b) - sf(a) : sf(a) - sf(b); if (df) return df; }
     var ra = va.r === null || va.r === undefined ? 101 : va.r, rb = vb.r === null || vb.r === undefined ? 101 : vb.r;
     return ra - rb;
   });
@@ -1158,11 +1298,14 @@ $("#thr").addEventListener("input", function (e) { state.thr = Number(e.target.v
 $("#modeLive").addEventListener("click", function () { state.mode = "live"; savePrefs(); render(); });
 $("#modeClosed").addEventListener("click", function () { state.mode = "closed"; savePrefs(); render(); });
 [["rsi", "Rsi"], ["macd", "Macd"], ["both", "Both"], ["flow", "Flow"], ["all", "All"]].forEach(function (p) {
-  $("#tab" + p[1]).addEventListener("click", function () { state.tab = p[0]; savePrefs(); render(); });
+  $("#tab" + p[1]).addEventListener("click", function () { state.tab = p[0]; savePrefs(); render(); if (p[0] === "flow") { loadHlMarket().then(render); loadWhales(false); } });
 });
 $("#flowIn").addEventListener("click", function () { state.flow = "in"; savePrefs(); render(); });
 $("#flowOut").addEventListener("click", function () { state.flow = "out"; savePrefs(); render(); });
 $("#q").addEventListener("input", function (e) { state.q = e.target.value; render(); });
+$("#whGo").addEventListener("click", function () { loadWhales(true); });
+try { $("#hlW").value = localStorage.getItem(HL_WALLETS_KEY) || ""; } catch (err) {}
+$("#hlW").addEventListener("change", function (e) { try { localStorage.setItem(HL_WALLETS_KEY, e.target.value.trim()); } catch (err) {} });
 $("#ghTok").value = ghToken();
 $("#ghTok").addEventListener("change", function (e) { try { localStorage.setItem(GH_TOKEN_KEY, e.target.value.trim()); } catch (err) {} });
 $("#theme").addEventListener("click", function () { state.theme = effectiveDark() ? "light" : "dark"; savePrefs(); applyTheme(); });
